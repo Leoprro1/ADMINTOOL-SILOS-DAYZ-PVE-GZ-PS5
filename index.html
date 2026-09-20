@@ -80,7 +80,7 @@
         .form-group { display: flex; flex-direction: column; gap: 4px; }
         label { color: #ffaaaa; font-size: 18px; letter-spacing: 1px; }
         
-        input, textarea { 
+        input, select, textarea { 
             padding: 10px; 
             background: #000000; 
             color: #ff3333; 
@@ -91,7 +91,7 @@
             width: 100%;
             box-sizing: border-box;
         }
-        input:focus, textarea:focus { border-color: #ff6666; box-shadow: 0 0 8px rgba(255, 102, 102, 0.4); }
+        input:focus, select:focus, textarea:focus { border-color: #ff6666; box-shadow: 0 0 8px rgba(255, 102, 102, 0.4); }
         textarea { height: 110px; color: #ffaaaa; resize: none; }
         
         button.terminal-btn { 
@@ -107,6 +107,8 @@
             transition: 0.1s;
         }
         button.terminal-btn:hover { background: #822b2b; color: #fff; }
+        button.danger-btn { background: #331111; color: #ff4444; border-color: #aa2222; }
+        button.danger-btn:hover { background: #aa2222; color: #fff; }
 
         .intel-box { background: #0a0505; padding: 10px; border: 1px dashed #822b2b; font-size: 19px; }
 
@@ -188,6 +190,7 @@
             <button id="btn-en" class="lang-btn" onclick="cambiarIdioma('en')">[ ENG ]</button>
         </div>
 
+        <!-- PANTALLA 1: LOGIN -->
         <div id="login-screen">
             <h2 id="t-login-title">[ ACCESO RESTRINGIDO - COMANDO CENTRAL ]</h2>
             <p id="t-login-sub">INTRODUZCA LA CLAVE DE SEGURIDAD ADMINISTRATIVA</p>
@@ -197,9 +200,10 @@
             </div>
         </div>
 
+        <!-- PANTALLA 2: PANEL DE CONTROL COMPLETO -->
         <div id="admin-main-content" style="display: none;">
             <h2 id="t-admin-title">[ PANEL DE CONTROL ADMINISTRATIVO - SILOS ]</h2>
-            <p id="t-admin-sub">ACCESO AUTORIZADO // VALIDACIÓN DE TOKENS Y DECODIFICACIÓN</p>
+            <p id="t-admin-sub">ACCESO AUTORIZADO // VALIDACIÓN DE TOKENS Y GESTIÓN DE MISILES</p>
 
             <div class="admin-panel">
                 <div class="panel-left">
@@ -214,6 +218,26 @@
                         <strong id="t-result-title">[ RESULTADO DE LA VALIDACIÓN ]</strong><br>
                         <div id="adminResultOutput" style="color: #ffcc00; font-size: 20px; margin-top: 5px;">ESPERANDO TOKEN...</div>
                     </div>
+
+                    <!-- NUEVAMENTE INTEGRADO: GESTIÓN DE CÓDIGOS Y FRAGMENTOS -->
+                    <h3 id="t-codes-heading" style="margin-top: 15px;">[ GESTIÓN DE CÓDIGOS Y FRAGMENTOS ]</h3>
+                    <div class="form-group">
+                        <label id="t-silo-select-label">SELECCIONAR SILO OBJETIVO:</label>
+                        <select id="siloTargetSelect">
+                            <option value="alfa">SILO ALFA</option>
+                            <option value="bravo">SILO BRAVO</option>
+                            <option value="charlie">SILO CHARLIE</option>
+                        </select>
+                    </div>
+                    <button class="terminal-btn" id="t-gen-code-btn" onclick="generarNuevoCodigoAdmin()">GENERAR NUEVOS CÓDIGOS Y FRAGMENTOS</button>
+                    
+                    <div class="intel-box" style="margin-top: 10px; font-size: 17px;" id="adminCodeDisplay">
+                        ESTADO DE CÓDIGOS: LISTO PARA GENERAR
+                    </div>
+
+                    <!-- NUEVAMENTE INTEGRADO: DISPARO DE OJIVAS -->
+                    <h3 id="t-launch-heading" style="margin-top: 15px;">[ PROTOCOLO DE LANZAMIENTO ]</h3>
+                    <button class="terminal-btn danger-btn" id="t-launch-btn" onclick="ejecutarDisparoOjiva()">[!] AUTORIZAR DISPARO DE OJIVA NUCLEAR</button>
                 </div>
 
                 <div class="panel-right">
@@ -253,7 +277,7 @@
                 loginBtn: "ACCEDER AL PANEL",
                 wrongPass: "ACCESO DENEGADO: CLAVE DE SEGURIDAD INCORRECTA.",
                 adminTitle: "[ PANEL DE CONTROL ADMINISTRATIVO - SILOS ]",
-                adminSub: "ACCESO AUTORIZADO // VALIDACIÓN DE TOKENS Y DECODIFICACIÓN",
+                adminSub: "ACCESO AUTORIZADO // VALIDACIÓN DE TOKENS Y GESTIÓN DE MISILES",
                 inputToken: "PEGAR TOKEN DE TRANSMISIÓN DEL JUGADOR:",
                 tokenPlaceholder: "PEGAR TOKEN AQUÍ...",
                 decodeBtn: "DECODIFICAR Y VERIFICAR TICKET",
@@ -261,7 +285,14 @@
                 waitingToken: "ESPERANDO TOKEN...",
                 mapTitle: "MATRIZ CARTOGRÁFICA DE VERIFICACIÓN",
                 mapInst: "[ TOCA: VER OBJETIVO | ARRASTRA: MOVER ]",
-                errFormat: "ERROR: FORMATO DE TOKEN INVÁLIDO."
+                errFormat: "ERROR: FORMATO DE TOKEN INVÁLIDO.",
+                codesHeading: "[ GESTIÓN DE CÓDIGOS Y FRAGMENTOS ]",
+                siloSelectLabel: "SELECCIONAR SILO OBJETIVO:",
+                genCodesBtn: "GENERAR NUEVOS CÓDIGOS Y FRAGMENTOS",
+                launchHeading: "[ PROTOCOLO DE LANZAMIENTO ]",
+                launchBtn: "[!] AUTORIZAR DISPARO DE OJIVA NUCLEAR",
+                launchConfirm: "¡ALERTA MÁXIMA! ¿Autorizar el lanzamiento de la ojiva nuclear para el silo seleccionado?",
+                launchSuccess: "¡LANZAMIENTO EJECUTADO CON ÉXITO! OJIVA EN VUELO."
             },
             en: {
                 loginTitle: "[ RESTRICTED ACCESS - CENTRAL COMMAND ]",
@@ -270,7 +301,7 @@
                 loginBtn: "ACCESS PANEL",
                 wrongPass: "ACCESS DENIED: INCORRECT SECURITY KEY.",
                 adminTitle: "[ ADMINISTRATIVE CONTROL PANEL - SILOS ]",
-                adminSub: "AUTHORIZED ACCESS // TOKEN VALIDATION & DECODING",
+                adminSub: "AUTHORIZED ACCESS // TOKEN VALIDATION & MISSILE MANAGEMENT",
                 inputToken: "PASTE PLAYER TRANSMISSION TOKEN:",
                 tokenPlaceholder: "PASTE TOKEN HERE...",
                 decodeBtn: "DECODE & VERIFY TICKET",
@@ -278,7 +309,14 @@
                 waitingToken: "WAITING FOR TOKEN...",
                 mapTitle: "VERIFICATION CARTOGRAPHIC MATRIX",
                 mapInst: "[ TAP: VIEW TARGET | DRAG: MOVE ]",
-                errFormat: "ERROR: INVALID TOKEN FORMAT."
+                errFormat: "ERROR: INVALID TOKEN FORMAT.",
+                codesHeading: "[ CODES & FRAGMENTS MANAGEMENT ]",
+                siloSelectLabel: "SELECT TARGET SILO:",
+                genCodesBtn: "GENERATE NEW CODES & FRAGMENTS",
+                launchHeading: "[ LAUNCH PROTOCOL ]",
+                launchBtn: "[!] AUTHORIZE NUCLEAR WARHEAD LAUNCH",
+                launchConfirm: "MAXIMUM ALERT! Authorize nuclear warhead launch for the selected silo?",
+                launchSuccess: "LAUNCH EXECUTED SUCCESSFULLY! WARHEAD IN FLIGHT."
             }
         };
 
@@ -305,6 +343,11 @@
             }
             document.getElementById('t-map-title').innerText = t.mapTitle;
             document.getElementById('t-map-inst').innerText = t.mapInst;
+            document.getElementById('t-codes-heading').innerText = t.codesHeading;
+            document.getElementById('t-silo-select-label').innerText = t.siloSelectLabel;
+            document.getElementById('t-gen-code-btn').innerText = t.genCodesBtn;
+            document.getElementById('t-launch-heading').innerText = t.launchHeading;
+            document.getElementById('t-launch-btn').innerText = t.launchBtn;
         }
 
         function verificarSesionActiva() {
@@ -339,6 +382,28 @@
             verificarSesionActiva();
         };
 
+        // --- FUNCIONES DE CÓDIGOS Y LANZAMIENTO ---
+        function generarNuevoCodigoAdmin() {
+            const silo = document.getElementById('siloTargetSelect').value.toUpperCase();
+            const codigoMaestro = Math.floor(1000 + Math.random() * 9000);
+            const frag1 = Math.floor(10 + Math.random() * 90);
+            const frag2 = Math.floor(10 + Math.random() * 90);
+            const frag3 = Math.floor(10 + Math.random() * 90);
+
+            document.getElementById('adminCodeDisplay').innerHTML = 
+                `<strong>SILO:</strong> ${silo}<br>` +
+                `<strong>CÓDIGO SECRETO:</strong> <span style="color:#ffcc00;">${codigoMaestro}</span><br>` +
+                `<strong>FRAGMENTOS (1 / 2 / 3):</strong> ${frag1} - ${frag2} - ${frag3}`;
+        }
+
+        function ejecutarDisparoOjiva() {
+            const t = traduccionesAdmin[idiomaActual];
+            if (confirm(t.launchConfirm)) {
+                alert(t.launchSuccess);
+            }
+        }
+
+        // --- LÓGICA DE MAPA Y ZOOM ---
         let scale = 1, posX = 0, posY = 0, isDragging = false, startX = 0, startY = 0;
 
         function actualizarTransformacion() {
