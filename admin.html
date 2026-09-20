@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<!-- Hecho por Leo para uso exclusivo de PVE GZ, si alguien quiere usarlo en su servidor, que antes pregunte. QUEDA PROHIBIDO BORRAR ESTA LINEA -->
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CENTRO DE MANDO ESTRATÉGICO // ADMIN SILOS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700&display=swap');
+
+        body { 
+            font-family: 'Share Tech Mono', monospace; 
+            background-color: #080202; 
+            color: #dcdcdc; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 1050px; 
+            margin: auto; 
+            background: #110505; 
+            border: 2px solid #8b0000; 
+            box-shadow: 0 0 25px rgba(139, 0, 0, 0.4);
+            padding: 30px; 
+            border-radius: 4px;
+        }
+        h1, h2 { 
+            font-family: 'Orbitron', sans-serif; 
+            color: #ff3333; 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+            border-bottom: 1px solid #550000;
+            padding-bottom: 8px;
+        }
+        .card { 
+            background: #160707; 
+            border: 1px solid #550000; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            border-radius: 3px; 
+        }
+        .silos-grid { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+        .silo-box { 
+            flex: 1; 
+            min-width: 300px;
+            background: #1f0808; 
+            border: 1px solid #8b0000; 
+            padding: 15px; 
+            border-radius: 3px; 
+        }
+        .silo-box h3 { margin-top: 0; color: #ff6666; font-family: 'Orbitron', sans-serif; font-size: 15px; }
+        .highlight-word { color: #ffcc00; font-size: 18px; font-weight: bold; }
+        .highlight-code { color: #ff3333; font-size: 18px; font-weight: bold; letter-spacing: 2px; }
+        
+        .fragment-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 6px; 
+            margin-top: 8px; 
+            background: #050101; 
+            padding: 8px; 
+            border: 1px dashed #8b0000; 
+        }
+        .fragment-item { 
+            background: #160707; 
+            color: #ff3333; 
+            border: 1px solid #550000; 
+            text-align: center; 
+            padding: 5px; 
+            font-weight: bold; 
+            font-size: 15px; 
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        textarea, select, input { 
+            width: 100%; 
+            background: #050101; 
+            color: #ff6666; 
+            border: 1px solid #8b0000; 
+            padding: 10px; 
+            font-family: 'Share Tech Mono', monospace; 
+            font-size: 14px;
+            box-sizing: border-box;
+            margin-top: 5px;
+        }
+        textarea:focus, select:focus, input:focus { outline: none; border-color: #ff3333; box-shadow: 0 0 8px rgba(255,0,0,0.5); }
+        
+        button { 
+            background: #8b0000; 
+            color: white; 
+            border: 1px solid #ff3333; 
+            padding: 12px 25px; 
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold; 
+            cursor: pointer; 
+            border-radius: 2px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.2s;
+            margin-top: 10px;
+        }
+        button:hover { background: #cc0000; box-shadow: 0 0 12px #ff3333; }
+        .status-bar { color: #ff9900; font-size: 15px; margin-bottom: 15px; }
+        .xml-box { color: #00ff66 !important; height: 180px; resize: none; }
+
+        /* Estilos del Mapa Táctico Admin */
+        .admin-flex { display: flex; gap: 20px; flex-wrap: wrap; }
+        .admin-form-side { flex: 1; min-width: 300px; }
+        .admin-map-side { width: 420px; display: flex; flex-direction: column; align-items: center; }
+        
+        .zoom-controls { display: flex; gap: 8px; margin-bottom: 6px; width: 100%; justify-content: center; }
+        .zoom-btn { padding: 4px 10px; background: #8b0000; color: #fff; border: 1px solid #ff3333; cursor: pointer; font-family: 'Orbitron', sans-serif; font-size: 12px; margin-top: 0; }
+        .zoom-btn:hover { background: #cc0000; }
+
+        #map-viewport { 
+            width: 420px; 
+            height: 420px; 
+            overflow: hidden; 
+            border: 2px solid #8b0000; 
+            position: relative; 
+            background: #000; 
+            cursor: crosshair;
+        }
+
+        #map-canvas { 
+            width: 1200px; 
+            height: 1200px; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            transform-origin: 0 0; 
+            background-image: url('chernarus_map.jpg');
+            background-size: cover;
+            background-position: center;
+            user-select: none;
+            filter: sepia(0.3) contrast(1.2) brightness(0.9);
+        }
+        
+        .target-marker { 
+            position: absolute; 
+            background: rgba(255, 0, 0, 0.4); 
+            border: 2px solid #ff3333; 
+            border-radius: 50%; 
+            transform: translate(-50%, -50%); 
+            pointer-events: none; 
+            z-index: 10;
+        }
+        .map-instructions { font-size: 13px; color: #cc6666; text-align: center; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>[ CENTRO DE MANDO ESTRATÉGICO // ADMIN ]</h1>
+        <div class="status-bar">CICLO OPERATIVO SEMANAL: <strong id="label-semana">---</strong></div>
+
+        <!-- 1. INTEL SEMANAL & 8 FRAGMENTOS CRIPTOGRÁFICOS (TRADER) -->
+        <div class="card">
+            <h2>1. Intel Semanal & 8 Fragmentos Criptográficos (Control Trader)</h2>
+            <p style="color: #aaa; font-size: 14px;">Desglose de los 8 fragmentos para verificar los anagramas y el código nuclear de 8 dígitos en el trader.</p>
+            <div class="silos-grid" id="silos-container"></div>
+        </div>
+
+        <!-- 2. VALIDADOR DE TICKETS DE DISCORD -->
+        <div class="card">
+            <h2>2. Validador de Tickets & Decodificador</h2>
+            <p style="color: #aaa; font-size: 14px;">Pega el token cifrado del ticket del jugador para verificar su código de 8 dígitos y extraer su XML:</p>
+            <textarea id="inputToken" placeholder="<!-- DAYZ-SECURE-SILO-... -->" style="height: 90px;"></textarea>
+            <button onclick="validarTicketDiscord()">Ejecutar Validación de Token</button>
+
+            <div id="resultadoValidacion" style="display:none; margin-top: 15px;">
+                <div style="background: #050101; border: 1px solid #8b0000; padding: 12px; margin-bottom: 10px;">
+                    <p id="estadoTicket" style="margin: 0 0 8px 0;"></p>
+                    <p id="infoTicket" style="margin: 0; color: #ccc; font-size: 14px;"></p>
+                </div>
+                <label style="color: #aaa; font-size: 13px; display: block;">XML OFICIAL DEL TICKET:</label>
+                <textarea id="xmlTicketOutput" class="xml-box" readonly></textarea>
+            </div>
+        </div>
+
+        <!-- 3. LANZAMIENTO LIBRE DE MISILES Y ARTILLERÍA -->
+        <div class="card">
+            <h2>3. Lanzamiento Libre de Ataques & Matriz Cartográfica</h2>
+            <p style="color: #aaa; font-size: 14px;">Selecciona el tipo de ojiva o bombardeo de artillería, marca tus blancos en el mapa y genera el XML.</p>
+            
+            <div class="admin-flex">
+                <div class="admin-form-side">
+                    <div style="margin-bottom: 12px;">
+                        <label style="color: #ff6666; display: block;">TIPO DE ATAQUE / OJIVA (PARA EL PRÓXIMO CLIC):</label>
+                        <select id="tipoMisil">
+                            <option value="artilleria">Bombardeo Estándar (Artillería / StaticAirStrike1)</option>
+                            <option value="100">Gas PO-X Estándar (Radio: 100m)</option>
+                            <option value="150">Ojiva Química Pesada (Radio: 150m)</option>
+                            <option value="200">Ojiva Termobárica de Exterminio (Radio: 200m)</option>
+                            <option value="300">Contaminación Masiva (Radio: 300m)</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 12px; background: #050101; border: 1px solid #8b0000; padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="checkMultiples" style="width: 20px; height: 20px; accent-color: #ff3333; margin: 0; cursor: pointer;">
+                            <label for="checkMultiples" style="color: #ffcc00; font-size: 14px; cursor: pointer; margin: 0;">MODO MULTI-IMPACTO LIBRE (Clics ilimitados)</label>
+                        </div>
+                        <button onclick="limpiarMarcadores()" style="background: #440000; padding: 6px 12px; font-size: 11px; margin-top: 4px;">Limpiar Objetivos del Mapa</button>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <div style="flex: 1;">
+                            <label style="color: #ff6666; display: block; font-size: 14px;">COORD X (ÚLTIMO):</label>
+                            <input type="number" id="inputX" placeholder="0.00" readonly style="color: #00ff66;">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="color: #ff6666; display: block; font-size: 14px;">COORD Z (ÚLTIMO):</label>
+                            <input type="number" id="inputZ" placeholder="0.00" readonly style="color: #00ff66;">
+                        </div>
+                    </div>
+
+                    <button onclick="generarXmlLibre()">Generar XML Táctico</button>
+                </div>
+
+                <div class="admin-map-side">
+                    <label style="color: #ff6666; font-size: 14px; margin-bottom: 4px;"><strong>MATRIZ DE CHERNARUS</strong></label>
+                    <div class="map-instructions">[ CLIC IZQ: AÑADIR BLANCO ]<br>[ CLIC DER SOSTENIDO: MOVER MAPA ]</div>
+                    
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" onclick="cambiarZoom(1.25)">[+] ZOOM</button>
+                        <button class="zoom-btn" onclick="cambiarZoom(0.8)">[-] REDUCIR</button>
+                        <button class="zoom-btn" onclick="resetZoom()">CENTRAR</button>
+                    </div>
+                    
+                    <div id="map-viewport" 
+                         oncontextmenu="return false;" 
+                         onmousedown="iniciarPan(event)" 
+                         onmousemove="moverPan(event)" 
+                         onmouseup="terminarPan(event)" 
+                         onmouseleave="terminarPan(event)"
+                         onwheel="handleZoomWheel(event)">
+                        <div id="map-canvas" onclick="marcarObjetivoAdmin(event)">
+                            <!-- Los marcadores dinámicos se inyectan aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <label style="color: #aaa; font-size: 13px; display: block;">XML RESULTANTE:</label>
+                <textarea id="xmlLibreOutput" class="xml-box" readonly placeholder="El XML aparecerá aquí..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log("%c[CENTRO DE MANDO ADMIN // PVE GZ]", "color: #ff3333; font-size: 18px; font-weight: bold; background: #000; padding: 4px;");
+        console.log("%cDesarrollado exclusivamente por LEO para la administración de PVE GZ.", "color: #ff6666; font-size: 13px;");
+
+        const datasetPalabras = {
+            alpha: [
+                "bunker", "refugio", "patrulla", "soldado", "radar", "antena", "gasolina", "botiquin", "mortero", "blindado",
+                "trinchera", "alarma", "cuartel", "municion", "sirena", "camuflaje", "vector", "alcance", "impacto", "oficial",
+                "general", "teniente", "coronel", "sargento", "mariscal", "division", "frente", "sector", "batallon", "escucha",
+                "codificado", "cifrado", "terminal", "conexion", "sistema", "manual", "archivo", "registro", "modulo", "energia",
+                "valvula", "presion", "reactor", "nucleo", "uranio", "oxigeno", "nitrogeno", "turbina", "motor", "hangar",
+                "pista", "torre", "cabo", "tropas", "asedio", "defensa", "ataque", "estrategia", "tactica", "combate",
+                "armario", "llave", "candado", "codigo", "password", "secreto", "mision", "objetivo", "blanco", "misil",
+                "fuego", "humo", "zona", "perimetro", "puerta", "acceso", "tarjeta", "lector", "pantalla", "visor",
+                "mapa", "brujula", "rumbo", "norte", "sur", "este", "oeste", "criterio", "fuerza", "potencia",
+                "trayectoria", "balistica", "coordenada", "latitud", "altitud", "silo", "fragmento", "puzle", "semana", "base"
+            ],
+            bravo: [
+                "apocalipsis", "asedio", "combate", "victoria", "peligro", "emboscada", "frontera", "bastion", "vector", "misil",
+                "impacto", "alerta", "estrategia", "comando", "fuego", "choque", "guerra", "frente", "batalla", "tropas",
+                "tanque", "artilleria", "fusil", "pistola", "granada", "c4", "mina", "trampa", "alambre", "escape",
+                "refugio", "zona", "rojo", "maxima", "muerte", "sangre", "furia", "clan", "banda", "horda",
+                "mutante", "zombi", "infectado", "toxico", "gas", "penumbra", "sombra", "noche", "tormenta", "lluvia",
+                "viento", "frio", "hielo", "nieve", "barro", "ruinas", "escombros", "metal", "hierro", "acero",
+                "plomo", "bala", "casquillo", "chaleco", "casco", "botas", "mochila", "tienda", "hoguera", "senal",
+                "faro", "radio", "frecuencia", "onda", "estatica", "canal", "enlace", "transmision", "mensaje", "texto",
+                "cifra", "clave", "sello", "firma", "token", "registro", "base", "servidor", "red", "nodo"
+            ],
+            charlie: [
+                "chernarus", "valhala", "infierno", "sangre", "morir", "sobrevivir", "venganza", "saqueo", "ruinas", "marea",
+                "toxico", "infeccion", "sombra", "eco", "silencio", "oscuridad", "abismo", "fatiga", "dolor", "panico",
+                "terror", "miedo", "grito", "fantasma", "spectro", "demonio", "bestia", "salvaje", "brutal", "asalto",
+                "toma", "captura", "control", "poder", "fuerza", "golpe", "fatidico", "fatal", "ceniza", "polvo",
+                "huesos", "tumba", "cripta", "foseta", "catacumba", "boveda", "sótano", "oscuro", "negro", "profundo",
+                "lejano", "perdido", "ignoto", "secreto", "oculto", "velado", "tapado", "misterio", "enigma", "enredo",
+                "acertijo", "puzle", "traba", "obstaculo", "barrera", "muro", "pared", "cercado", "reja", "cerradura",
+                "pestillo", "cerrojo", "llave", "combinacion", "numero", "digito", "secuencia", "orden", "serie", "cadena",
+                "vinculo", "union", "conexion", "puente", "paso", "ruta", "camino", "senda", "via", "pista", "rastro"
+            ]
+        };
+
+        // Generador determinista del Código Nuclear de 8 dígitos exactos por silo y semana
+        function calcularCodigoNuclear8Digitos(silo) {
+            const semilla = obtenerSemanaActual() + "-" + silo + "-NUK";
+            let hash = 0;
+            for (let i = 0; i < semilla.length; i++) {
+                hash = (hash << 5) - hash + semilla.charCodeAt(i);
+                hash |= 0;
+            }
+            // Generar un número de 8 dígitos estrictos (ej: 71421395)
+            let codigoNum = Math.abs(hash * 997) % 90000000 + 10000000;
+            return codigoNum.toString();
+        }
+
+        // Mapped codes de 8 dígitos por silo actualizados dinámicamente
+        const codigosFinalesSilos = {
+            alpha: calcularCodigoNuclear8Digitos('alpha'),
+            bravo: calcularCodigoNuclear8Digitos('bravo'),
+            charlie: calcularCodigoNuclear8Digitos('charlie')
+        };
+
+        let listaImpactos = [];
+        let scale = 1, posX = 0, posY = 0;
+        let isDragging = false, startX = 0, startY = 0;
+
+        function obtenerSemanaActual() {
+            const ahora = new Date();
+            const inicioAnio = new Date(ahora.getFullYear(), 0, 1);
+            const dias = Math.floor((ahora - inicioAnio) / (24 * 60 * 60 * 1000));
+            const semana = Math.ceil((dias + inicioAnio.getDay() + 1) / 7);
+            return `${ahora.getFullYear()}-W${semana}`;
+        }
+
+        function calcularPalabraSemanal(silo) {
+            const lista = datasetPalabras[silo];
+            const semilla = obtenerSemanaActual() + "-" + silo;
+            let hash = 0;
+            for (let i = 0; i < semilla.length; i++) {
+                hash = (hash << 5) - hash + semilla.charCodeAt(i);
+                hash |= 0; 
+            }
+            return lista[Math.abs(hash) % lista.length];
+        }
+
+        // Generador criptográfico de los 8 fragmentos sincronizados con los 8 dígitos
+        function generarOchoFragmentosCriptograficos(silo, palabraClave) {
+            const semilla = obtenerSemanaActual() + "-" + silo;
+            let hash = 0;
+            for (let i = 0; i < semilla.length; i++) {
+                hash = (hash << 5) - hash + semilla.charCodeAt(i);
+                hash |= 0;
+            }
+
+            let letrasBase = palabraClave.toUpperCase().slice(0, 8);
+            while(letrasBase.length < 8) letrasBase += "X";
+
+            let letrasCifradas = [];
+            let desplazamiento = Math.abs(hash) % 26;
+            for (let i = 0; i < letrasBase.length; i++) {
+                let code = letrasBase.charCodeAt(i);
+                if (code >= 65 && code <= 90) {
+                    let cifrada = String.fromCharCode(((code - 65 + desplazamiento) % 26) + 65);
+                    letrasCifradas.push(cifrada);
+                } else {
+                    letrasCifradas.push(letrasBase[i]);
+                }
+            }
+
+            let posiciones = [1, 2, 3, 4, 5, 6, 7, 8];
+            for (let i = posiciones.length - 1; i > 0; i--) {
+                let j = Math.abs((hash + i * 7) % (i + 1));
+                let temp = posiciones[i];
+                posiciones[i] = posiciones[j];
+                posiciones[j] = temp;
+            }
+
+            let htmlFrags = '<div class="fragment-grid">';
+            for (let f = 0; f < 8; f++) {
+                let letraFragmento = letrasCifradas[f];
+                let numeroOrden = posiciones[f];
+                htmlFrags += `<div class="fragment-item">${letraFragmento}-${numeroOrden}</div>`;
+            }
+            htmlFrags += '</div>';
+
+            return htmlFrags;
+        }
+
+        window.onload = function() {
+            const semana = obtenerSemanaActual();
+            document.getElementById('label-semana').innerText = `[ ${semana} ]`;
+
+            const container = document.getElementById('silos-container');
+            ['alpha', 'bravo', 'charlie'].forEach(silo => {
+                const palabra = calcularPalabraSemanal(silo);
+                const codigo = codigosFinalesSilos[silo];
+                const grillaFragmentos = generarOchoFragmentosCriptograficos(silo, palabra);
+
+                container.innerHTML += `
+                    <div class="silo-box">
+                        <h3>SECTOR: SILO ${silo.toUpperCase()}</h3>
+                        <p><strong>Palabra Secreta:</strong> <span class="highlight-word">${palabra.toUpperCase()}</span></p>
+                        <p><strong>Código Nuclear (8 Dígitos):</strong> <span class="highlight-code">${codigo}</span></p>
+                        <p style="margin: 5px 0 2px 0; font-size: 13px; color: #aaffaa;">8 Fragmentos Cifrados (Trader):</p>
+                        ${grillaFragmentos}
+                    </div>
+                `;
+            });
+        };
+
+        // --- NAVEGACIÓN Y ZOOM CENTRADO DEL MAPA ADMIN ---
+        function actualizarTransformacion() {
+            const canvas = document.getElementById('map-canvas');
+            canvas.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+        }
+
+        function cambiarZoom(factor) {
+            const viewport = document.getElementById('map-viewport');
+            const vWidth = viewport.clientWidth;
+            const vHeight = viewport.clientHeight;
+
+            const centerX = vWidth / 2;
+            const centerY = vHeight / 2;
+
+            const canvasX = (centerX - posX) / scale;
+            const canvasY = (centerY - posY) / scale;
+
+            let nuevaEscala = Math.max(1, Math.min(scale * factor, 4));
+
+            if (nuevaEscala === 1) {
+                posX = 0;
+                posY = 0;
+            } else {
+                posX = centerX - canvasX * nuevaEscala;
+                posY = centerY - canvasY * nuevaEscala;
+            }
+
+            scale = nuevaEscala;
+            actualizarTransformacion();
+            redibujarMarcadores();
+        }
+
+        function resetZoom() {
+            scale = 1; 
+            posX = 0; 
+            posY = 0;
+            actualizarTransformacion();
+            redibujarMarcadores();
+        }
+
+        function handleZoomWheel(e) {
+            e.preventDefault();
+            cambiarZoom(e.deltaY < 0 ? 1.15 : 0.85);
+        }
+
+        function iniciarPan(e) {
+            if (e.button === 2) {
+                isDragging = true;
+                startX = e.clientX - posX;
+                startY = e.clientY - posY;
+                e.preventDefault();
+            }
+        }
+
+        function moverPan(e) {
+            if (!isDragging) return;
+            posX = e.clientX - startX;
+            posY = e.clientY - startY;
+            actualizarTransformacion();
+        }
+
+        function terminarPan(e) {
+            if (e.button === 2 || isDragging) isDragging = false;
+        }
+
+        function redibujarMarcadores() {
+            const canvas = document.getElementById('map-canvas');
+            const existentes = canvas.querySelectorAll('.target-marker');
+            existentes.forEach(m => m.remove());
+
+            listaImpactos.forEach(imp => {
+                const marker = document.createElement('div');
+                marker.className = 'target-marker';
+                
+                let radioPixels = 10;
+                if (imp.tipo !== 'artilleria') {
+                    const radioMeters = parseFloat(imp.tipo);
+                    radioPixels = (radioMeters / 15360) * 1200 * 2;
+                }
+
+                marker.style.width = Math.max(8, radioPixels) + 'px';
+                marker.style.height = Math.max(8, radioPixels) + 'px';
+                marker.style.left = imp.canvasX + 'px';
+                marker.style.top = imp.canvasY + 'px';
+
+                canvas.appendChild(marker);
+            });
+        }
+
+        function marcarObjetivoAdmin(event) {
+            if (event.button !== 0) return;
+            const canvas = document.getElementById('map-canvas');
+            const rect = canvas.getBoundingClientRect();
+            
+            const clickX = (event.clientX - rect.left) / scale;
+            const clickY = (event.clientY - rect.top) / scale;
+
+            const xCoord = (clickX / 1200) * 15360;
+            const zCoord = ((1200 - clickY) / 1200) * 15360;
+
+            document.getElementById('inputX').value = xCoord.toFixed(2);
+            document.getElementById('inputZ').value = zCoord.toFixed(2);
+
+            const tipoAtaqueActual = document.getElementById('tipoMisil').value;
+
+            const modoMulti = document.getElementById('checkMultiples').checked;
+            if (!modoMulti) {
+                listaImpactos = [];
+            }
+
+            listaImpactos.push({ canvasX: clickX, canvasY: clickY, x: xCoord, z: zCoord, tipo: tipoAtaqueActual });
+            redibujarMarcadores();
+        }
+
+        function limpiarMarcadores() {
+            listaImpactos = [];
+            redibujarMarcadores();
+            document.getElementById('inputX').value = '';
+            document.getElementById('inputZ').value = '';
+            document.getElementById('xmlLibreOutput').value = '';
+        }
+
+        function validarTicketDiscord() {
+            try {
+                const rawToken = document.getElementById('inputToken').value.trim();
+                if (!rawToken) { alert("Por favor, pega un token válido."); return; }
+
+                const parts = rawToken.split('\n');
+                const base64Data = parts[1] || parts[0];
+                const decodedJson = decodeURIComponent(atob(base64Data));
+                const data = JSON.parse(decodedJson);
+
+                const siloKey = data.silo.toLowerCase();
+                const codigoEsperado = codigosFinalesSilos[siloKey];
+
+                let estadoHTML = "<span style='color: #00ff66; font-weight: bold;'>[ AUTORIZADO ] Código verificado correctamente. Coordenadas íntegras.</span>";
+                if (data.code !== codigoEsperado) {
+                    estadoHTML = "<span style='color: #ff3333; font-weight: bold;'>[ ALERTA ROJA ] ¡CÓDIGO FALSO O INCORRECTO!</span>";
+                }
+
+                const posXVal = Number(data.x).toFixed(2);
+                const posZVal = Number(data.z).toFixed(2);
+
+                document.getElementById('resultadoValidacion').style.display = 'block';
+                document.getElementById('estadoTicket').innerHTML = estadoHTML;
+                document.getElementById('infoTicket').innerHTML = `
+                    <strong>Silo Objetivo:</strong> SILO ${data.silo.toUpperCase()}<br>
+                    <strong>Código introducido:</strong> ${data.code}<br>
+                    <strong>Coordenadas:</strong> X: ${posXVal} | Z: ${posZVal}<br>
+                    <strong>Fecha del Ticket:</strong> ${new Date(data.time).toLocaleString()}
+                `;
+
+                const xmlTicket = `<event name="StaticContaminatedArea">
+    <nominal>1</nominal>
+    <min>1</min>
+    <lifetime>0</lifetime>
+    <restock>0</restock>
+    <explicit>0</explicit>
+    <copyshowdebris>0</copyshowdebris>
+    <adjustoperationsdelay>0</adjustoperationsdelay>
+    <pos x="${posXVal}" z="${posZVal}" a="0" y="0"/>
+    <radius>100</radius>
+    <color>rgba(255,0,0,0.5)</color>
+</event>`;
+
+                document.getElementById('xmlTicketOutput').value = xmlTicket;
+            } catch (e) {
+                alert("[ ERROR ] El token introducido está corrupto o no tiene un formato válido.");
+            }
+        }
+
+        function generarXmlLibre() {
+            if (listaImpactos.length === 0) {
+                alert("ERROR: No hay ningún objetivo marcado en la matriz cartográfica.");
+                return;
+            }
+
+            let xmlResultante = `<!-- === BLOQUE DE ATAQUE TÁCTICO // PVE GZ === -->\n`;
+
+            listaImpactos.forEach((imp, index) => {
+                if (imp.tipo === 'artilleria') {
+                    xmlResultante += `<event name="StaticAirStrike1">
+    <nominal>1</nominal>
+    <min>1</min>
+    <max>1</max>
+    <lifetime>2</lifetime>
+    <restock>1.9</restock>
+    <saferadius>0</saferadius>
+    <distanceradius>1</distanceradius>
+    <cleanupradius>1</cleanupradius>
+    <flags deletable="1" init_random="0" remove_damaged="0"/>
+    <position>fixed</position>
+    <limit>mixed</limit>
+    <active>1</active>
+    <children>
+        <child lootmax="0" lootmin="0" max="1" min="1" type="ExplosionTest"/>
+    </children>
+</event>
+<event name="StaticAirStrike1">
+    <zone smin="1" smax="1" dmin="1" dmax="1" r="10" />
+    <pos x="${imp.x.toFixed(2)}" z="${imp.z.toFixed(2)}" a="0.000000" />
+</event>${index < listaImpactos.length - 1 ? '\n\n' : ''}`;
+                } else {
+                    xmlResultante += `<event name="StaticContaminatedArea">
+    <nominal>1</nominal>
+    <min>1</min>
+    <lifetime>0</lifetime>
+    <restock>0</restock>
+    <explicit>0</explicit>
+    <copyshowdebris>0</copyshowdebris>
+    <adjustoperationsdelay>0</adjustoperationsdelay>
+    <pos x="${imp.x.toFixed(2)}" z="${imp.z.toFixed(2)}" a="0" y="0"/>
+    <radius>${imp.tipo}</radius>
+    <color>rgba(255,0,0,0.5)</color>
+</event>${index < listaImpactos.length - 1 ? '\n\n' : ''}`;
+                }
+            });
+
+            document.getElementById('xmlLibreOutput').value = xmlResultante;
+        }
+    </script>
+</body>
+</html>
