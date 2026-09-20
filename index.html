@@ -311,18 +311,7 @@
             document.getElementById('t-map-inst').innerText = t.mapInst;
         }
 
-        // --- GESTIÓN DE SESIÓN DE 2 HORAS Y HASH SHA-256 SEGURO ---
-        // Hash SHA-256 precalculado de "greywolf" (insensible a mayúsculas/minúsculas)
-        const HASH_CORRECTO = "772f883d65f57736f86c26b9117ff1c834a3e7efcdbf4549f05a960cd42be858";
-
-        async function calcularHashSHA256(texto) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(texto);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
+        // --- GESTIÓN DE SESIÓN DE 2 HORAS Y CONTRASEÑA DIRECTA ---
         function verificarSesionActiva() {
             const authTime = localStorage.getItem('pve_gz_admin_auth');
             if (authTime) {
@@ -337,12 +326,11 @@
             }
         }
 
-        async function verificarPasswordAdmin() {
+        function verificarPasswordAdmin() {
             const t = traduccionesAdmin[idiomaActual];
             const inputVal = document.getElementById('adminPasswordInput').value.trim().toLowerCase();
-            const hashIngresado = await calcularHashSHA256(inputVal);
             
-            if (hashIngresado === HASH_CORRECTO) {
+            if (inputVal === 'greywolf') {
                 localStorage.setItem('pve_gz_admin_auth', new Date().getTime().toString());
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-main-content').style.display = 'block';
