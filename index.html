@@ -61,7 +61,6 @@
             padding-bottom: 5px;
         }
 
-        /* PANTALLA DE ACCESO / LOGIN */
         #login-screen {
             text-align: center;
             padding: 40px 20px;
@@ -184,13 +183,11 @@
 <body>
     <div class="container">
         
-        <!-- SELECTOR DE IDIOMA -->
         <div class="top-bar">
             <button id="btn-es" class="lang-btn active" onclick="cambiarIdioma('es')">[ ESP ]</button>
             <button id="btn-en" class="lang-btn" onclick="cambiarIdioma('en')">[ ENG ]</button>
         </div>
 
-        <!-- PANTALLA 1: LOGIN ADMINISTRATIVO -->
         <div id="login-screen">
             <h2 id="t-login-title">[ ACCESO RESTRINGIDO - COMANDO CENTRAL ]</h2>
             <p id="t-login-sub">INTRODUZCA LA CLAVE DE SEGURIDAD ADMINISTRATIVA</p>
@@ -200,7 +197,6 @@
             </div>
         </div>
 
-        <!-- PANTALLA 2: PANEL DE CONTROL (OCULTO HASTA AUTORIZAR) -->
         <div id="admin-main-content" style="display: none;">
             <h2 id="t-admin-title">[ PANEL DE CONTROL ADMINISTRATIVO - SILOS ]</h2>
             <p id="t-admin-sub">ACCESO AUTORIZADO // VALIDACIÓN DE TOKENS Y DECODIFICACIÓN</p>
@@ -311,7 +307,6 @@
             document.getElementById('t-map-inst').innerText = t.mapInst;
         }
 
-        // --- GESTIÓN DE SESIÓN DE 2 HORAS Y CONTRASEÑA DIRECTA ---
         function verificarSesionActiva() {
             const authTime = localStorage.getItem('pve_gz_admin_auth');
             if (authTime) {
@@ -344,7 +339,6 @@
             verificarSesionActiva();
         };
 
-        // --- LÓGICA DE MAPA Y ZOOM ---
         let scale = 1, posX = 0, posY = 0, isDragging = false, startX = 0, startY = 0;
 
         function actualizarTransformacion() {
