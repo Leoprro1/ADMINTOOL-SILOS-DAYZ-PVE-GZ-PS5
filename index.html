@@ -455,7 +455,7 @@
             }
         }
 
-        // --- DATSET Y MOTOR DE CÓDIGOS OFICIALES ---
+        // --- DATASET Y MOTOR DE CÓDIGOS OFICIALES ---
         const datasetPalabras = {
             alpha: ["bunker", "refugio", "patrulla", "soldado", "radar", "antena", "gasolina", "botiquin", "mortero", "blindado", "trinchera", "alarma", "cuartel", "municion", "sirena", "camuflaje", "vector", "alcance", "impacto", "oficial", "general", "teniente", "coronel", "sargento", "mariscal", "division", "frente", "sector", "batallon", "escucha", "codificado", "cifrado", "terminal", "conexion", "sistema", "manual", "archivo", "registro", "modulo", "energia", "valvula", "presion", "reactor", "nucleo", "uranio", "oxigeno", "nitrogeno", "turbina", "motor", "hangar", "pista", "torre", "cabo", "tropas", "asedio", "defensa", "ataque", "estrategia", "tactica", "combate", "armario", "llave", "candado", "codigo", "password", "secreto", "mision", "objetivo", "blanco", "misil", "fuego", "humo", "zona", "perimetro", "puerta", "acceso", "tarjeta", "lector", "pantalla", "visor", "mapa", "brujula", "rumbo", "norte", "sur", "este", "oeste", "criterio", "fuerza", "potencia", "trayectoria", "balistica", "coordenada", "latitud", "altitud", "silo", "fragmento", "puzle", "semana", "base"],
             bravo: ["apocalipsis", "asedio", "combate", "victoria", "peligro", "emboscada", "frontera", "bastion", "vector", "misil", "impacto", "alerta", "estrategia", "comando", "fuego", "choque", "guerra", "frente", "batalla", "tropas", "tanque", "artilleria", "fusil", "pistola", "granada", "c4", "mina", "trampa", "alambre", "escape", "refugio", "zona", "rojo", "maxima", "muerte", "sangre", "furia", "clan", "banda", "horda", "mutante", "zombi", "infectado", "toxico", "gas", "penumbra", "sombra", "noche", "tormenta", "lluvia", "viento", "frio", "hielo", "nieve", "barro", "ruinas", "escombros", "metal", "hierro", "acero", "plomo", "bala", "casquillo", "chaleco", "casco", "botas", "mochila", "tienda", "hoguera", "senal", "faro", "radio", "frecuencia", "onda", "estatica", "canal", "enlace", "transmision", "mensaje", "texto", "cifra", "clave", "sello", "firma", "token", "registro", "base", "servidor", "red", "nodo"],
@@ -613,45 +613,62 @@
         }
 
         function iniciarPan(e) {
-            if (e.button === 2 || e.touches) {
+            if (e.button === 2) {
                 isDragging = true;
-                startX = (e.clientX || e.touches[0].clientX) - posX;
-                startY = (e.clientY || e.touches[0].clientY) - posY;
-                if(e.cancelable) e.preventDefault();
+                startX = e.clientX - posX;
+                startY = e.clientY - posY;
+                e.preventDefault();
             }
         }
 
         function moverPan(e) {
             if (!isDragging) return;
-            posX = (e.clientX || e.touches[0].clientX) - startX;
-            posY = (e.clientY || e.touches[0].clientY) - startY;
+            posX = e.clientX - startX;
+            posY = e.clientY - startY;
             actualizarTransformacion();
         }
 
-        function terminarPan() {
-            isDragging = false;
+        function terminarPan(e) {
+            if (e.button === 2 || isDragging) isDragging = false;
         }
 
-        // --- SOPORTE TÁCTICO MÓVIL ---
+        // --- SOPORTE TÁCTICO MÓVIL (EVITA FANTASMAS AL MOVER CÁMARA) ---
         const viewportMap = document.getElementById('map-viewport');
+        let tocandoMovil = false;
+        let touchStartXPos = 0;
+        let touchStartYPos = 0;
+
         viewportMap.addEventListener('touchstart', function(e) {
             if (e.touches.length === 1) {
                 isDragging = true;
-                startX = e.touches[0].clientX - posX;
-                startY = e.touches[0].clientY - posY;
+                tocandoMovil = false;
+                touchStartXPos = e.touches[0].clientX;
+                touchStartYPos = e.touches[0].clientY;
+                startX = touchStartXPos - posX;
+                startY = touchStartYPos - posY;
             }
         }, { passive: false });
 
         viewportMap.addEventListener('touchmove', function(e) {
             if (!isDragging || e.touches.length !== 1) return;
+            
+            const movimientoX = Math.abs(e.touches[0].clientX - touchStartXPos);
+            const movimientoY = Math.abs(e.touches[0].clientY - touchStartYPos);
+            if (movimientoX > 6 || movimientoY > 6) {
+                tocandoMovil = true; // Se considera desplazamiento de cámara, no selección de blanco
+            }
+
             e.preventDefault();
             posX = e.touches[0].clientX - startX;
             posY = e.touches[0].clientY - startY;
             actualizarTransformacion();
         }, { passive: false });
 
-        viewportMap.addEventListener('touchend', function() {
+        viewportMap.addEventListener('touchend', function(e) {
             isDragging = false;
+            if (!tocandoMovil && e.changedTouches && e.changedTouches.length > 0) {
+                procesarClickOToqueAdmin(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+            }
         });
 
         function redibujarMarcadores() {
@@ -705,13 +722,6 @@
             if (event.button !== 0) return;
             procesarClickOToqueAdmin(event.clientX, event.clientY);
         }
-
-        const canvasMap = document.getElementById('map-canvas');
-        canvasMap.addEventListener('touchend', function(event) {
-            if (event.changedTouches && event.changedTouches.length > 0) {
-                procesarClickOToqueAdmin(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
-            }
-        });
 
         function limpiarMarcadores() {
             listaImpactos = [];
