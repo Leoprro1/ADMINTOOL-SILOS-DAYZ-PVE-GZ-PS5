@@ -695,7 +695,7 @@
             });
         }
 
-        // --- CALIBRACIÓN FINA ANTI-DESYNC ---
+        // --- CALIBRACIÓN MILIMÉTRICA PARA LA IMAGEN DE IZURVIVE CON MARCO ---
         function procesarClickOToqueAdmin(clientX, clientY) {
             const viewport = document.getElementById('map-viewport');
             const rect = viewport.getBoundingClientRect();
@@ -706,8 +706,17 @@
             const clickCanvasX = (clickViewportX - posX) / scale;
             const clickCanvasY = (clickViewportY - posY) / scale;
 
-            const xCoord = (clickCanvasX / 1200) * 15360;
-            const zCoord = ((1200 - clickCanvasY) / 1200) * 15360;
+            // Margen exacto medido en la imagen de iZurvive para aislar la cuadrícula de juego (0 a 15360m)
+            const mapOffsetX = 35;  // Compensación de borde izquierdo (marcos y barras)
+            const mapOffsetY = 35;  // Compensación de borde superior
+            const mapRenderWidth = 1130;  // Ancho real útil del mapa dentro de los 1200px
+            const mapRenderHeight = 1130; // Alto real útil del mapa dentro de los 1200px
+
+            const relX = (clickCanvasX - mapOffsetX) / mapRenderWidth;
+            const relY = (clickCanvasY - mapOffsetY) / mapRenderHeight;
+
+            const xCoord = Math.max(0, Math.min(15360, relX * 15360));
+            const zCoord = Math.max(0, Math.min(15360, (1 - relY) * 15360));
 
             document.getElementById('inputX').value = xCoord.toFixed(2);
             document.getElementById('inputZ').value = zCoord.toFixed(2);
