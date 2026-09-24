@@ -695,15 +695,21 @@
             });
         }
 
+        // --- CORRECCIÓN DE DESYNC: CÁLCULO PRECISO DEL CENTRO DEL MARCADOR ---
         function procesarClickOToqueAdmin(clientX, clientY) {
-            const canvas = document.getElementById('map-canvas');
-            const rect = canvas.getBoundingClientRect();
+            const viewport = document.getElementById('map-viewport');
+            const rect = viewport.getBoundingClientRect();
             
-            const clickX = (clientX - rect.left) / scale;
-            const clickY = (clientY - rect.top) / scale;
+            // Coordenada exacta del clic dentro del viewport adaptada al zoom y pan actual
+            const clickViewportX = clientX - rect.left;
+            const clickViewportY = clientY - rect.top;
 
-            const xCoord = (clickX / 1200) * 15360;
-            const zCoord = ((1200 - clickY) / 1200) * 15360;
+            const clickCanvasX = (clickViewportX - posX) / scale;
+            const clickCanvasY = (clickViewportY - posY) / scale;
+
+            // Traducción estricta a los metros reales de Chernarus (15360m x 15360m)
+            const xCoord = (clickCanvasX / 1200) * 15360;
+            const zCoord = ((1200 - clickCanvasY) / 1200) * 15360;
 
             document.getElementById('inputX').value = xCoord.toFixed(2);
             document.getElementById('inputZ').value = zCoord.toFixed(2);
@@ -714,7 +720,7 @@
                 listaImpactos = [];
             }
 
-            listaImpactos.push({ canvasX: clickX, canvasY: clickY, x: xCoord, z: zCoord, tipo: tipoAtaqueActual });
+            listaImpactos.push({ canvasX: clickCanvasX, canvasY: clickCanvasY, x: xCoord, z: zCoord, tipo: tipoAtaqueActual });
             redibujarMarcadores();
         }
 
