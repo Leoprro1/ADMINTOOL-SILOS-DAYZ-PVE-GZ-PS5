@@ -655,7 +655,7 @@
             const movimientoX = Math.abs(e.touches[0].clientX - touchStartXPos);
             const movimientoY = Math.abs(e.touches[0].clientY - touchStartYPos);
             if (movimientoX > 6 || movimientoY > 6) {
-                tocandoMovil = true; // Se considera desplazamiento de cámara, no selección de blanco
+                tocandoMovil = true; 
             }
 
             e.preventDefault();
@@ -695,19 +695,17 @@
             });
         }
 
-        // --- CORRECCIÓN DE DESYNC: CÁLCULO PRECISO DEL CENTRO DEL MARCADOR ---
+        // --- CALIBRACIÓN FINA ANTI-DESYNC ---
         function procesarClickOToqueAdmin(clientX, clientY) {
             const viewport = document.getElementById('map-viewport');
             const rect = viewport.getBoundingClientRect();
             
-            // Coordenada exacta del clic dentro del viewport adaptada al zoom y pan actual
             const clickViewportX = clientX - rect.left;
             const clickViewportY = clientY - rect.top;
 
             const clickCanvasX = (clickViewportX - posX) / scale;
             const clickCanvasY = (clickViewportY - posY) / scale;
 
-            // Traducción estricta a los metros reales de Chernarus (15360m x 15360m)
             const xCoord = (clickCanvasX / 1200) * 15360;
             const zCoord = ((1200 - clickCanvasY) / 1200) * 15360;
 
